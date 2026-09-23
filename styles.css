@@ -1,0 +1,261 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  --ink: #2b2140;
+  --paper: #fff8ee;
+  --accent: #ffc93c;
+  --accent-deep: #f08a24;
+  --font: "Baloo 2", "Trebuchet MS", Verdana, system-ui, sans-serif;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0a0f1f;
+  font-family: var(--font);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  /* soft vignette so the letterboxed area is not a dead black slab */
+  background:
+    radial-gradient(120% 90% at 50% 0%, #21305c 0%, #121A34 45%, #080c18 100%);
+}
+
+#stage {
+  position: relative;
+  line-height: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.10),
+    0 24px 60px -12px rgba(0, 0, 0, 0.75),
+    0 4px 14px rgba(0, 0, 0, 0.4);
+  /* size is set by JS to keep the 2:3 logical canvas crisp */
+}
+
+#game {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: auto;
+}
+
+#tapzone {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+/* ---------- small round buttons ---------- */
+#hudbtns {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 7px;
+  z-index: 5;
+}
+
+.iconbtn {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.22), inset 0 -2px 0 rgba(0, 0, 0, 0.08);
+  transition: transform 0.12s ease, background 0.12s ease;
+  padding: 0;
+}
+.iconbtn:hover { background: #fff; transform: translateY(-1px); }
+.iconbtn:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.22); }
+.iconbtn.off { background: rgba(255, 255, 255, 0.4); color: #6b6480; }
+
+/* ---------- help panel ---------- */
+.panel {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgba(20, 16, 38, 0.72);
+  backdrop-filter: blur(3px);
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  line-height: 1.35;
+  animation: fade 0.18s ease;
+}
+.panel.hidden { display: none; }
+
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+.panel-inner {
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 16px;
+  padding: 16px 18px 18px;
+  box-shadow: 0 10px 0 rgba(0, 0, 0, 0.18);
+  text-align: left;
+  -webkit-overflow-scrolling: touch;
+}
+
+.panel-inner h2 {
+  margin: 0 0 2px;
+  font-size: 24px;
+  font-weight: 800;
+  text-align: center;
+  color: var(--accent-deep);
+}
+.panel-inner h3 {
+  margin: 12px 0 4px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #8a7fa8;
+}
+.panel-inner ul.tight {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+}
+.panel-inner ul.tight li { margin: 3px 0; }
+.panel-inner b { color: #4a3a6b; }
+
+.bigbtn {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 11px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(#ffd45e, var(--accent));
+  color: #6b3c06;
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--accent-deep);
+}
+.bigbtn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--accent-deep); }
+
+/* ---------- email-the-score panel ---------- */
+#mailpanel .panel-inner { max-width: 340px; }
+
+.stats {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 4px;
+  padding: 0;
+}
+.stats > div {
+  flex: 1;
+  background: rgba(107, 94, 138, 0.09);
+  border-radius: 10px;
+  padding: 7px 4px 8px;
+  text-align: center;
+  min-width: 0;
+}
+.stats dt {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a7fa8;
+}
+.stats dd {
+  margin: 1px 0 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #4a3a6b;
+  overflow-wrap: anywhere;
+}
+.stats.is-best dd { color: var(--accent-deep); }
+
+#mail-form label {
+  display: block;
+  margin: 10px 0 3px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #8a7fa8;
+}
+#mail-form input {
+  display: block;
+  width: 100%;
+  padding: 9px 11px;
+  border: 2px solid #e8d9c2;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px; /* 16px keeps iOS from zooming the page on focus */
+  font-weight: 600;
+  -webkit-user-select: text;
+  user-select: text;
+}
+#mail-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 201, 60, 0.35);
+}
+#mail-form input[aria-invalid="true"] { border-color: #f0679b; }
+
+.status {
+  margin: 10px 0 0;
+  min-height: 17px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #8a7fa8;
+  text-align: center;
+}
+.status.is-error { color: #d94a7c; }
+.status.is-ok { color: #2f9e6e; }
+
+.bigbtn[disabled] { opacity: 0.6; cursor: progress; }
+
+.linkbtn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px;
+  border: 0;
+  background: none;
+  color: #8a7fa8;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.linkbtn:hover { color: var(--ink); }
+
+#fallback {
+  display: none;
+  color: #fff;
+  font-family: var(--font);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel { animation: none; }
+}

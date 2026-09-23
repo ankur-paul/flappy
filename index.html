@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0b1026" />
+<title>Flappy Feathers — a cute flappy bird game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🐤</text></svg>" />
+</head>
+<body>
+  <div id="stage">
+    <canvas id="game" width="480" height="720" aria-label="Flappy Feathers game canvas" role="img"></canvas>
+
+    <!-- Touch / click surface (canvas handles drawing only) -->
+    <div id="tapzone" tabindex="0" aria-label="Tap to flap"></div>
+
+    <!-- Top-right small buttons -->
+    <div id="hudbtns">
+      <button id="btn-sound" class="iconbtn" title="Sound on/off (M)" aria-label="Toggle sound">🔊</button>
+      <button id="btn-help" class="iconbtn" title="Surprises &amp; controls (H)" aria-label="Help">?</button>
+      <button id="btn-pause" class="iconbtn" title="Pause (P)" aria-label="Pause">⏸</button>
+    </div>
+
+    <!-- Help / secrets panel -->
+    <div id="help" class="panel hidden" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <div class="panel-inner">
+        <h2 id="help-title">🐤 Flappy Feathers</h2>
+        <h3>Controls</h3>
+        <ul class="tight">
+          <li><b>Space</b> / <b>Click</b> / <b>Tap</b> — flap</li>
+          <li><b>P</b> or <b>Esc</b> — pause &nbsp;·&nbsp; <b>M</b> — mute &nbsp;·&nbsp; <b>H</b> — this panel</li>
+          <li><b>C</b> — change your bird (or tap the bird on the title screen)</li>
+          <li><b>E</b> — email your score from the game-over card</li>
+        </ul>
+        <h3>Surprises to find ✨</h3>
+        <ul class="tight">
+          <li>⭐ <b>Star</b> — ghost mode: fly straight through pipes</li>
+          <li>🧲 <b>Magnet</b> — coins come to you</li>
+          <li>🍬 <b>Candy</b> — shrink down, tiny hitbox</li>
+          <li>⏳ <b>Hourglass</b> — the world slows to a crawl</li>
+          <li>🛡️ <b>Bubble</b> — survives one crash</li>
+          <li>🪙 <b>Coins</b> — chain them fast for a <b>×5 combo</b></li>
+          <li>🌟 <b>Golden pipes</b> are rare and worth <b>5 points</b></li>
+          <li>🪶 A lucky <b>feather</b> drifts by now and then…</li>
+          <li>😮 Squeeze past a pipe for a <b>near-miss</b> bonus</li>
+          <li>🌗 Day turns to sunset, night and dawn as you fly</li>
+          <li>🌧️ ❄️ Weather rolls in. 🎈 Balloons, 🛸 visitors and shooting stars drift past</li>
+          <li>💨 Past 25 points the <b>wind</b> picks up, and pipes start to sway</li>
+          <li>🏅 Earn bronze, silver, gold, platinum and rainbow medals</li>
+          <li>🎨 New birds unlock at <b>10 / 20 / 35 / 50</b> points</li>
+        </ul>
+        <button id="btn-help-close" class="bigbtn">Got it!</button>
+      </div>
+    </div>
+
+    <!-- Email-the-score panel, shown after a run ends -->
+    <div id="mailpanel" class="panel hidden" role="dialog" aria-modal="true" aria-labelledby="mail-title">
+      <div class="panel-inner">
+        <h2 id="mail-title">📧 Email your score</h2>
+
+        <dl id="mail-stats" class="stats">
+          <div><dt>Score</dt><dd id="mail-score">0</dd></div>
+          <div><dt>High score</dt><dd id="mail-best">0</dd></div>
+          <div><dt>Time</dt><dd id="mail-time">0.0s</dd></div>
+        </dl>
+
+        <form id="mail-form" novalidate>
+          <label for="mail-name">Player name</label>
+          <input id="mail-name" name="playerName" type="text" maxlength="60"
+                 autocomplete="nickname" placeholder="Ankur" required />
+
+          <label for="mail-to">Send to</label>
+          <input id="mail-to" name="to" type="email" maxlength="200"
+                 autocomplete="email" inputmode="email" placeholder="you@example.com" required />
+
+          <p id="mail-status" class="status" role="status" aria-live="polite"></p>
+
+          <button id="mail-send" type="submit" class="bigbtn">Send my score</button>
+          <button id="mail-skip" type="button" class="linkbtn">Back to results</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <p id="fallback">This game needs a browser with canvas support.</p>
+  <script src="game.js"></script>
+  <script src="score-email.js"></script>
+</body>
+</html>
