@@ -7,6 +7,7 @@
 'use strict';
 
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 
 const app = express();
@@ -19,7 +20,8 @@ const FROM_NAME = process.env.BREVO_FROM_NAME || 'Flappy Feathers';
 const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
 
 app.use(express.json({ limit: '16kb' }));
-app.use(express.static(__dirname));
+// Locally Express serves public/; on Vercel the CDN serves it and this is a no-op.
+app.use(express.static(path.join(__dirname, 'public')));
 
 /* ------------------------------------------------------------------ helpers */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -186,9 +188,14 @@ app.post('/api/score-email', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🐤 Flappy Feathers on http://localhost:${PORT}`);
-  if (!BREVO_API_KEY || !FROM_EMAIL) {
-    console.warn('   ⚠️  BREVO_API_KEY / BREVO_FROM_EMAIL missing — score emails will fail.');
-  }
-});
+// Vercel imports the app as a serverless function; `npm start` runs it directly.
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🐤 Flappy Feathers on http://localhost:${PORT}`);
+    if (!BREVO_API_KEY || !FROM_EMAIL) {
+      console.warn('   ⚠️  BREVO_API_KEY / BREVO_FROM_EMAIL missing — score emails will fail.');
+    }
+  });
+}
+
+module.exports = app;

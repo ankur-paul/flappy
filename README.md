@@ -12,7 +12,7 @@ cp .env.example .env    # then fill in your Brevo details
 npm start               # http://localhost:3000
 ```
 
-The game itself is plain static files, so `index.html` still works when opened directly —
+The game itself is plain static files, so `index.html` (in `public/`) still works when opened directly —
 only the score email needs the server.
 
 ## Email setup (Brevo)
@@ -49,7 +49,7 @@ is a dozen lines.
 | --- | --- |
 | `game.js` | Times each run and exposes `window.Flappy` (`on('gameover'\|'restart')`, `restart()`, `summary()`, `isOver()`) |
 | `score-email.js` | Shows the overlay on game over, validates input, POSTs the summary |
-| `index.html` / `styles.css` | The `#mailpanel` overlay markup and styling |
+| `public/index.html` / `public/styles.css` | The `#mailpanel` overlay markup and styling |
 | `server.js` | Validates, rate-limits, and relays to `api.brevo.com/v3/smtp/email` |
 
 **Timing.** The stopwatch starts on the flap that begins a run and stops the moment the
