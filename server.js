@@ -4,32 +4,36 @@
    The Brevo API key stays here, server side. The browser only ever sees
    POST /api/score-email.
    ========================================================================= */
-'use strict';
+"use strict";
 
-require('dotenv').config();
-const path = require('path');
-const express = require('express');
+require("dotenv").config();
+const path = require("path");
+const express = require("express");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const FROM_EMAIL = process.env.BREVO_FROM_EMAIL;
-const FROM_NAME = process.env.BREVO_FROM_NAME || 'Flappy Feathers';
+const FROM_NAME = process.env.BREVO_FROM_NAME || "Flappy Feathers";
 
-const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
+const BREVO_ENDPOINT = "https://api.brevo.com/v3/smtp/email";
 
-app.use(express.json({ limit: '16kb' }));
+app.use(express.json({ limit: "16kb" }));
 // Locally Express serves public/; on Vercel the CDN serves it and this is a no-op.
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
 /* ------------------------------------------------------------------ helpers */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, (c) => (
-    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
-  ));
+  return String(s).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
 }
 
 /** Non-negative integer, or fallback. Never trust the client's numbers. */
@@ -39,9 +43,9 @@ function int(v, fallback) {
 }
 
 function formatTime(sec) {
-  if (sec < 60) return sec.toFixed(1) + 's';
+  if (sec < 60) return sec.toFixed(1) + "s";
   const m = Math.floor(sec / 60);
-  return m + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
+  return m + ":" + String(Math.floor(sec % 60)).padStart(2, "0");
 }
 
 /* Simple in-memory throttle: this endpoint sends mail, so it should not be a
@@ -61,9 +65,12 @@ function rateLimited(ip) {
 
 /* ------------------------------------------------------------- email bodies */
 function buildEmail(d) {
-  const medal = d.medal ? d.medal[0].toUpperCase() + d.medal.slice(1) : 'None yet';
-  const when = new Date(d.playedAt).toLocaleString('en-US', {
-    dateStyle: 'medium', timeStyle: 'short'
+  const medal = d.medal
+    ? d.medal[0].toUpperCase() + d.medal.slice(1)
+    : "None yet";
+  const when = new Date(d.playedAt).toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
   });
 
   const subject = d.newBest
@@ -71,21 +78,21 @@ function buildEmail(d) {
     : `🐤 ${d.playerName} scored ${d.score} in Flappy Feathers`;
 
   const rows = [
-    ['Player', d.playerName],
-    ['Score this run', String(d.score)],
-    ['High score', d.best + (d.newBest ? '  (new record!)' : '')],
-    ['Time taken', d.timeText],
-    ['Medal', medal],
-    ['Coins collected', String(d.coins)],
-    ['Best combo', '×' + d.bestCombo],
-    ['Bird', d.bird],
-    ['Played', when]
+    ["Player", d.playerName],
+    ["Score this run", String(d.score)],
+    ["High score", d.best + (d.newBest ? "  (new record!)" : "")],
+    ["Time taken", d.timeText],
+    ["Medal", medal],
+    ["Coins collected", String(d.coins)],
+    ["Best combo", "×" + d.bestCombo],
+    ["Bird", d.bird],
+    ["Played", when],
   ];
 
   const text =
     `${d.playerName} just finished a run of Flappy Feathers.\n\n` +
-    rows.map(([k, v]) => `${k.padEnd(16)} ${v}`).join('\n') +
-    `\n\n${d.newBest ? 'A brand new personal best — nicely flown!' : 'Fly again and beat it.'}\n`;
+    rows.map(([k, v]) => `${k.padEnd(16)} ${v}`).join("\n") +
+    `\n\n${d.newBest ? "A brand new personal best — nicely flown!" : "Fly again and beat it."}\n`;
 
   const html = `<!doctype html>
 <html><body style="margin:0;padding:24px;background:#f4f1ea;font-family:'Trebuchet MS',Verdana,sans-serif;color:#2b2140;">
@@ -94,16 +101,20 @@ function buildEmail(d) {
       <div style="font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7a4208;">Flappy Feathers</div>
       <div style="font-size:26px;font-weight:800;color:#5a2f04;margin-top:2px;">🐤 ${escapeHtml(d.playerName)} scored ${d.score}</div>
     </td></tr>
-    ${d.newBest ? `<tr><td style="padding:14px 26px 0;"><div style="background:#f0679b;color:#fff;font-weight:800;font-size:14px;padding:9px 14px;border-radius:9px;text-align:center;">🏆 New high score!</div></td></tr>` : ''}
+    ${d.newBest ? `<tr><td style="padding:14px 26px 0;"><div style="background:#f0679b;color:#fff;font-weight:800;font-size:14px;padding:9px 14px;border-radius:9px;text-align:center;">🏆 New high score!</div></td></tr>` : ""}
     <tr><td style="padding:18px 26px 26px;">
       <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="font-size:15px;">
-        ${rows.map(([k, v]) => `<tr>
+        ${rows
+          .map(
+            ([k, v]) => `<tr>
           <td style="padding:7px 0;color:#8a7fa8;font-weight:700;">${escapeHtml(k)}</td>
           <td style="padding:7px 0;text-align:right;font-weight:800;color:#4a3a6b;">${escapeHtml(v)}</td>
-        </tr>`).join('')}
+        </tr>`,
+          )
+          .join("")}
       </table>
       <p style="margin:20px 0 0;font-size:14px;color:#8a7fa8;text-align:center;">
-        ${d.newBest ? 'A brand new personal best — nicely flown!' : 'Fly again and beat it.'}
+        ${d.newBest ? "A brand new personal best — nicely flown!" : "Fly again and beat it."}
       </p>
     </td></tr>
   </table>
@@ -113,27 +124,31 @@ function buildEmail(d) {
 }
 
 /* ------------------------------------------------------------------- route */
-app.post('/api/score-email', async (req, res) => {
+app.post("/api/score-email", async (req, res) => {
   if (!BREVO_API_KEY || !FROM_EMAIL) {
     return res.status(500).json({
-      error: 'Email is not configured on the server (set BREVO_API_KEY and BREVO_FROM_EMAIL).'
+      error: "Email is not configured on the server.",
     });
   }
 
-  const ip = req.ip || req.socket.remoteAddress || 'unknown';
+  const ip = req.ip || req.socket.remoteAddress || "unknown";
   if (rateLimited(ip)) {
-    return res.status(429).json({ error: 'Too many emails just now — try again in a minute.' });
+    return res
+      .status(429)
+      .json({ error: "Too many emails just now — try again in a minute." });
   }
 
   const body = req.body || {};
-  const to = String(body.to || '').trim();
-  const playerName = String(body.playerName || '').trim().slice(0, 60);
+  const to = String(body.to || "").trim();
+  const playerName = String(body.playerName || "")
+    .trim()
+    .slice(0, 60);
 
   if (!EMAIL_RE.test(to) || to.length > 200) {
-    return res.status(400).json({ error: 'That email address looks off.' });
+    return res.status(400).json({ error: "That email address looks off." });
   }
   if (!playerName) {
-    return res.status(400).json({ error: 'Player name is required.' });
+    return res.status(400).json({ error: "Player name is required." });
   }
 
   const seconds = Math.max(0, Math.min(86400, Number(body.seconds) || 0));
@@ -146,28 +161,34 @@ app.post('/api/score-email', async (req, res) => {
     timeText: formatTime(seconds),
     coins: int(body.coins, 0),
     bestCombo: int(body.bestCombo, 1),
-    medal: ['bronze', 'silver', 'gold', 'platinum', 'rainbow'].includes(body.medal) ? body.medal : null,
-    bird: String(body.bird || 'Flappy').slice(0, 40),
-    playedAt: Number.isFinite(Date.parse(body.playedAt)) ? body.playedAt : new Date().toISOString()
+    medal: ["bronze", "silver", "gold", "platinum", "rainbow"].includes(
+      body.medal,
+    )
+      ? body.medal
+      : null,
+    bird: String(body.bird || "Flappy").slice(0, 40),
+    playedAt: Number.isFinite(Date.parse(body.playedAt))
+      ? body.playedAt
+      : new Date().toISOString(),
   };
 
   const { subject, text, html } = buildEmail(data);
 
   try {
     const brevo = await fetch(BREVO_ENDPOINT, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'api-key': BREVO_API_KEY,
-        'Content-Type': 'application/json',
-        accept: 'application/json'
+        "api-key": BREVO_API_KEY,
+        "Content-Type": "application/json",
+        accept: "application/json",
       },
       body: JSON.stringify({
         sender: { email: FROM_EMAIL, name: FROM_NAME },
         to: [{ email: to, name: playerName }],
         subject,
         textContent: text,
-        htmlContent: html
-      })
+        htmlContent: html,
+      }),
     });
 
     // Brevo answers 201 Created with { messageId }
@@ -179,12 +200,16 @@ app.post('/api/score-email', async (req, res) => {
     try {
       const parsed = JSON.parse(detail);
       if (parsed.message) message = parsed.message;
-    } catch (e) { /* not JSON, keep the status message */ }
-    console.error('Brevo error', brevo.status, detail);
+    } catch (e) {
+      /* not JSON, keep the status message */
+    }
+    console.error("Brevo error", brevo.status, detail);
     return res.status(502).json({ error: message });
   } catch (err) {
-    console.error('Brevo request failed', err);
-    return res.status(502).json({ error: 'Could not reach the email service.' });
+    console.error("Brevo request failed", err);
+    return res
+      .status(502)
+      .json({ error: "Could not reach the email service." });
   }
 });
 
@@ -193,7 +218,9 @@ if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`🐤 Flappy Feathers on http://localhost:${PORT}`);
     if (!BREVO_API_KEY || !FROM_EMAIL) {
-      console.warn('   ⚠️  BREVO_API_KEY / BREVO_FROM_EMAIL missing — score emails will fail.');
+      console.warn(
+        "   ⚠️  BREVO_API_KEY / BREVO_FROM_EMAIL missing — score emails will fail.",
+      );
     }
   });
 }
